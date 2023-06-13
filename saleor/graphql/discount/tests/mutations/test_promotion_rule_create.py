@@ -19,8 +19,10 @@ PROMOTION_RULE_CREATE_MUTATION = """
                 promotion {
                     id
                     events {
-                        type
-                        ruleId
+                        ... on PromotionRuleEvent {
+                            type
+                            ruleId
+                        }
                     }
                 }
                 channels {

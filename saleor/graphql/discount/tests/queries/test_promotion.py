@@ -163,9 +163,21 @@ QUERY_PROMOTION_BY_ID_WITH_EVENTS = """
         promotion(id: $id) {
             id
             events {
-                type
-                user {
-                    id
+                ... on PromotionEvent {
+                    type
+                    createdBy {
+                        ... on User {
+                            id
+                        }
+                    }
+                }
+                ... on PromotionRuleEvent {
+                    type
+                    createdBy {
+                        ... on User {
+                            id
+                        }
+                    }
                 }
             }
         }
@@ -174,17 +186,21 @@ QUERY_PROMOTION_BY_ID_WITH_EVENTS = """
 
 
 def test_query_promotion_events(
-    promotion_events, staff_api_client, permission_group_manage_discounts
+    promotion_events,
+    staff_api_client,
+    permission_manage_discounts,
+    permission_manage_staff,
 ):
     # given
     promotion = promotion_events[0].promotion
     promotion_id = graphene.Node.to_global_id("Promotion", promotion.id)
-    permission_group_manage_discounts.user_set.add(staff_api_client.user)
     variables = {"id": promotion_id}
 
     # when
     response = staff_api_client.post_graphql(
-        QUERY_PROMOTION_BY_ID_WITH_EVENTS, variables
+        QUERY_PROMOTION_BY_ID_WITH_EVENTS,
+        variables,
+        permissions=(permission_manage_discounts, permission_manage_staff),
     )
 
     # then
@@ -194,6 +210,6 @@ def test_query_promotion_events(
     for event in promotion.events.all():
         event_data = {
             "type": event.type.upper(),
-            "user": {"id": graphene.Node.to_global_id("User", event.user.id)},
+            "createdBy": {"id": graphene.Node.to_global_id("User", event.user.id)},
         }
         assert event_data in events

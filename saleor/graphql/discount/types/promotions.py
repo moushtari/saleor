@@ -1,6 +1,7 @@
 import graphene
 from graphene import relay
 
+from ....discount import PromotionEvents as events
 from ....discount import models
 from ....permission.auth_filters import AuthorizationFilters
 from ....permission.enums import AccountPermissions, AppPermission
@@ -44,7 +45,7 @@ class Promotion(ModelObjectType[models.Promotion]):
         lambda: PromotionRule, description="The list of promotion rules."
     )
     events = NonNullList(
-        lambda: PromotionEvent,
+        lambda: PromotionEvents,
         description="The list of events associated with the promotion.",
     )
 
@@ -116,7 +117,7 @@ class PromotionRule(ModelObjectType[models.PromotionRule]):
         return ChannelsByPromotionRuleIdLoader(info.context).load(root.id)
 
 
-class PromotionEvent(ModelObjectType[models.PromotionEvent]):
+class BasePromotionEvent(ModelObjectType[models.PromotionEvent]):
     id = graphene.GlobalID()
     date = graphene.DateTime(description="Date when event happened.")
     type = PromotionEventsEnum(description="Promotion event type.")
@@ -124,9 +125,6 @@ class PromotionEvent(ModelObjectType[models.PromotionEvent]):
         UserOrApp,
         description="User or App that created the promotion event. ",
         permissions=[AccountPermissions.MANAGE_STAFF, AppPermission.MANAGE_APPS],
-    )
-    rule_id = graphene.String(
-        description="The rule ID associated with the promotion event."
     )
 
     class Meta:
@@ -166,6 +164,41 @@ class PromotionEvent(ModelObjectType[models.PromotionEvent]):
 
         return None
 
+
+class PromotionEvent(BasePromotionEvent):
+    class Meta:
+        description = "History log of the promotion." + ADDED_IN_315 + PREVIEW_FEATURE
+        interfaces = [relay.Node]
+        model = models.PromotionEvent
+        doc_category = DOC_CATEGORY_DISCOUNTS
+
+
+class PromotionRuleEvent(BasePromotionEvent):
+    class Meta:
+        description = "History log of the promotion." + ADDED_IN_315 + PREVIEW_FEATURE
+        interfaces = [relay.Node]
+        model = models.PromotionEvent
+        doc_category = DOC_CATEGORY_DISCOUNTS
+
+    rule_id = graphene.String(
+        description="The rule ID associated with the promotion event."
+    )
+
     @staticmethod
     def resolve_rule_id(root: models.PromotionEvent, _info):
         return root.parameters.get("rule_id", None)
+
+
+class PromotionEvents(graphene.Union):
+    class Meta:
+        types = (PromotionEvent, PromotionRuleEvent)
+
+    @classmethod
+    def resolve_type(cls, instance: models.PromotionEvent, _info):
+        if instance.type in [
+            events.RULE_CREATED,
+            events.RULE_UPDATED,
+            events.RULE_DELETED,
+        ]:
+            return PromotionRuleEvent
+        return PromotionEvent

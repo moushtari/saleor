@@ -14,8 +14,10 @@ PROMOTION_RULE_DELETE_MUTATION = """
                 id
                 promotion {
                     events {
-                        type
-                        ruleId
+                        ... on PromotionRuleEvent {
+                            type
+                            ruleId
+                        }
                     }
                 }
             }

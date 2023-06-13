@@ -12919,7 +12919,7 @@ type Promotion implements Node & ObjectWithMetadata @doc(category: "Discounts") 
   rules: [PromotionRule!]
 
   """The list of events associated with the promotion."""
-  events: [PromotionEvent!]
+  events: [PromotionEvents!]
 }
 
 scalar JSON
@@ -12968,6 +12968,8 @@ enum RewardValueTypeEnum @doc(category: "Discounts") {
   PERCENTAGE
 }
 
+union PromotionEvents = PromotionEvent | PromotionRuleEvent
+
 """
 History log of the promotion.
 
@@ -12990,20 +12992,44 @@ type PromotionEvent implements Node @doc(category: "Discounts") {
   Requires one of the following permissions: MANAGE_STAFF, MANAGE_APPS.
   """
   createdBy: UserOrApp
-
-  """The rule ID associated with the promotion event."""
-  ruleId: String
 }
 
 """An enumeration."""
 enum PromotionEventsEnum @doc(category: "Discounts") {
   PROMOTION_CREATED
   PROMOTION_UPDATED
+  PROMOTION_STARTED
+  PROMOTION_ENDED
   RULE_CREATED
   RULE_UPDATED
   RULE_DELETED
-  PROMOTION_START
-  PROMOTION_ENDED
+}
+
+"""
+History log of the promotion.
+
+Added in Saleor 3.15.
+
+Note: this API is currently in Feature Preview and can be subject to changes at later point.
+"""
+type PromotionRuleEvent implements Node @doc(category: "Discounts") {
+  id: ID!
+
+  """Date when event happened."""
+  date: DateTime
+
+  """Promotion event type."""
+  type: PromotionEventsEnum
+
+  """
+  User or App that created the promotion event. 
+  
+  Requires one of the following permissions: MANAGE_STAFF, MANAGE_APPS.
+  """
+  createdBy: UserOrApp
+
+  """The rule ID associated with the promotion event."""
+  ruleId: String
 }
 
 """Represents a job data of exported file."""

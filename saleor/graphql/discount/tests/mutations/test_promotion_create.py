@@ -918,16 +918,29 @@ PROMOTION_CREATE_WITH_EVENTS = """
             promotion {
                 id
                 events {
-                    type
-                    createdBy {
-                        ... on User {
-                            id
-                        }
-                        ... on App {
-                            id
+                    ... on PromotionEvent {
+                        type
+                        createdBy {
+                            ... on User {
+                                id
+                            }
+                            ... on App {
+                                id
+                            }
                         }
                     }
-                    ruleId
+                    ... on PromotionRuleEvent {
+                        type
+                        createdBy {
+                            ... on User {
+                                id
+                            }
+                            ... on App {
+                                id
+                            }
+                        }
+                        ruleId
+                    }
                 }
                 rules {
                     id
@@ -1010,7 +1023,7 @@ def test_promotion_create_events_by_staff_user(
     assert len(users) == 1
     assert users[0] == user_id
 
-    rule_ids = [event["ruleId"] for event in events]
+    rule_ids = [event["ruleId"] for event in events if event.get("ruleId")]
     rules = data["promotion"]["rules"]
     for rule in rules:
         assert rule["id"] in rule_ids
@@ -1082,7 +1095,7 @@ def test_promotion_create_events_by_app(
     assert len(apps) == 1
     assert apps[0] == app_id
 
-    rule_ids = [event["ruleId"] for event in events]
+    rule_ids = [event["ruleId"] for event in events if event.get("ruleId")]
     rules = data["promotion"]["rules"]
     for rule in rules:
         assert rule["id"] in rule_ids

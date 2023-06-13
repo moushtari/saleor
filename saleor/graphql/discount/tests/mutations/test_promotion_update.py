@@ -22,7 +22,12 @@ PROMOTION_UPDATE_MUTATION = """
                 createdAt
                 updatedAt
                 events {
-                    type
+                    ... on PromotionEvent {
+                        type
+                    }
+                    ... on PromotionRuleEvent {
+                        type
+                    }
                 }
             }
             errors {

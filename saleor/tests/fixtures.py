@@ -5108,7 +5108,9 @@ def promotion_events(promotion, staff_user):
                 type=PromotionEvents.RULE_CREATED, user=staff_user, promotion=promotion
             ),
             PromotionEvent(
-                type=PromotionEvents.START, user=staff_user, promotion=promotion
+                type=PromotionEvents.PROMOTION_STARTED,
+                user=staff_user,
+                promotion=promotion,
             ),
         ]
     )
