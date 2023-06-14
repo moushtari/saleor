@@ -30,3 +30,4 @@ def set_user_is_confirmed_task():
 
     if ids:
         set_user_is_confirmed(qs)
+        set_user_is_confirmed_task.delay()
