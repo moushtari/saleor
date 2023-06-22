@@ -1,0 +1,13 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['buildx', 'create', '--name', 'builder', '--use']
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args: ['-c', 'docker buildx build . --platform linux/arm64 -t europe-west3-docker.pkg.dev/$PROJECT_ID/moushtari-repo/$_IMAGE --push']
+
+images:
+  - 'europe-west3-docker.pkg.dev/$PROJECT_ID/moushtari-repo/$_IMAGE'
+
+substitutions:
+  _IMAGE: 'saleor:latest'
+
