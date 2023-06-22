@@ -1,5 +1,4 @@
 from typing import cast
-from urllib.parse import urlencode
 
 import graphene
 from django.conf import settings
@@ -21,7 +20,7 @@ from ....account.utils import retrieve_user_by_email
 from ....checkout import AddressType
 from ....core.exceptions import PermissionDenied
 from ....core.tracing import traced_atomic_transaction
-from ....core.utils.url import prepare_url, validate_storefront_url
+from ....core.utils.url import validate_storefront_url
 from ....giftcard.utils import assign_user_gift_cards
 from ....graphql.utils import get_user_or_app_from_context
 from ....order.utils import match_orders_with_new_user
@@ -615,13 +614,6 @@ class BaseCustomerCreate(ModelMutation, I18nMixin):
                     channel_slug, error_class=AccountErrorCode
                 ).slug
 
-            token = default_token_generator.make_token(instance)
-            params = urlencode({"email": instance.email, "token": token})
-            confirm_url = prepare_url(params, cleaned_input["redirect_url"])
-
-            manager.account_confirmation_requested(
-                instance, channel_slug, token, confirm_url
-            )
             send_set_password_notification(
                 cleaned_input.get("redirect_url"),
                 instance,
