@@ -101,7 +101,7 @@ from ..core.scalars import JSON, UUID, PositiveDecimal
 from ..core.types import BaseInputObjectType, BaseObjectType
 from ..core.types import common as common_types
 from ..core.utils import from_global_id_or_error
-from ..meta.mutations import MetadataInput
+from ..meta.inputs import MetadataInput
 from ..plugins.dataloaders import get_plugin_manager_promise
 from ..utils import get_user_or_app_from_context
 from .enums import (
