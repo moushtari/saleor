@@ -20,6 +20,7 @@ All notable, unreleased changes to this project will be documented in this file.
 - Fix Error Cannot return null for non-nullable field Webhook.name. - #12989 by @cyborg7898
 - Remove unused `django-versatileimagefield` package - #13148 by @SzymJ
 - Remove unused `google-measurement-protocol` package - #13146 by @SzymJ
+- Add `ACCOUNT_CONFIRMATION_REQUESTED` async event - #13162 by @SzymJ
 
 # 3.14.0
 
