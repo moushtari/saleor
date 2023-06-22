@@ -136,10 +136,11 @@ EMAIL_BACKEND: str = email_config.get("EMAIL_BACKEND", "")
 EMAIL_USE_TLS: bool = email_config.get("EMAIL_USE_TLS", False)
 EMAIL_USE_SSL: bool = email_config.get("EMAIL_USE_SSL", False)
 
-ENABLE_SSL = get_bool_from_env("ENABLE_SSL", False)
+MOUSHTARI_HTTPS_PROXY = get_bool_from_env("MOUSHTARI_HTTPS_PROXY", False)
+ENABLE_SSL = get_bool_from_env("ENABLE_SSL", MOUSHTARI_HTTPS_PROXY)
 
 if ENABLE_SSL:
-    SECURE_SSL_REDIRECT = not DEBUG
+    SECURE_SSL_REDIRECT = not (DEBUG or MOUSHTARI_HTTPS_PROXY)
 
 DEFAULT_FROM_EMAIL: str = os.environ.get(
     "DEFAULT_FROM_EMAIL", EMAIL_HOST_USER or "noreply@example.com"
