@@ -1,9 +1,11 @@
 from typing import cast
+from urllib.parse import urlencode
 
 import graphene
 import jwt
 from django.conf import settings
 from django.contrib.auth import password_validation
+from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 
 from ....account import events as account_events
@@ -14,7 +16,7 @@ from ....checkout import AddressType
 from ....core.jwt import create_token, jwt_decode
 from ....core.tokens import account_delete_token_generator
 from ....core.tracing import traced_atomic_transaction
-from ....core.utils.url import validate_storefront_url
+from ....core.utils.url import prepare_url, validate_storefront_url
 from ....giftcard.utils import assign_user_gift_cards
 from ....order.utils import match_orders_with_new_user
 from ....permission.auth_filters import AuthorizationFilters
@@ -162,11 +164,25 @@ class AccountRegister(ModelMutation):
             if site.settings.enable_account_confirmation_by_email:
                 user.is_active = False
                 user.save()
+
+                # Notifications will be deprecated in the future
                 notifications.send_account_confirmation(
                     user,
                     cleaned_input["redirect_url"],
                     manager,
                     channel_slug=cleaned_input["channel"],
+                )
+
+                token = default_token_generator.make_token(user)
+                params = urlencode({"email": user.email, "token": token})
+                confirm_url = prepare_url(params, cleaned_input["redirect_url"])
+
+                cls.call_event(
+                    manager.account_confirmation_requested,
+                    user,
+                    cleaned_input["channel"],
+                    token,
+                    confirm_url,
                 )
             else:
                 user.save()
